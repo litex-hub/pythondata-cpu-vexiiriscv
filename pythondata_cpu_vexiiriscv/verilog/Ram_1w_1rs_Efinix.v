@@ -1,4 +1,5 @@
 
+
 module Ram_1w_1rs #(
         parameter integer wordCount = 0,
         parameter integer wordWidth = 0,
@@ -23,24 +24,27 @@ module Ram_1w_1rs #(
         output [rdDataWidth-1:0] rd_data
     );
 
+    `define symbol_width (wrDataWidth/wrMaskWidth)
+
     generate
     genvar i;
+    
 
     for (i=0;i<wrMaskWidth;i=i+1) begin
-        reg [8-1:0] ram_block [(2**wrAddressWidth)-1:0];
+        reg [`symbol_width-1:0] ram_block [(2**wrAddressWidth)-1:0];
         always @ (posedge wr_clk) begin
             if(wr_en && wr_mask[i]) begin
-                ram_block[wr_addr] <= wr_data[i*8 +:8];
+                ram_block[wr_addr] <= wr_data[i*`symbol_width +:`symbol_width];
             end
         end
 
-        reg [8-1:0] ram_rd_data;
+        reg [`symbol_width-1:0] ram_rd_data;
         always @ (posedge rd_clk) begin
             if(rd_en) begin
                 ram_rd_data <= ram_block[rd_addr];
             end
         end
-        assign rd_data[i*8 +:8] = ram_rd_data;
+        assign rd_data[i*`symbol_width +:`symbol_width] = ram_rd_data;
     end
     endgenerate
 

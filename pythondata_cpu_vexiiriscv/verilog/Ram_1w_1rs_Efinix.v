@@ -24,28 +24,24 @@ module Ram_1w_1rs #(
         output [rdDataWidth-1:0] rd_data
     );
 
-    `define symbol_width (wrDataWidth/wrMaskWidth)
-
-    generate
-    genvar i;
-    
-
-    for (i=0;i<wrMaskWidth;i=i+1) begin
-        reg [`symbol_width-1:0] ram_block [(2**wrAddressWidth)-1:0];
-        always @ (posedge wr_clk) begin
-            if(wr_en && wr_mask[i]) begin
-                ram_block[wr_addr] <= wr_data[i*`symbol_width +:`symbol_width];
+    reg [wrDataWidth-1:0] ram_block [(2**wrAddressWidth)-1:0];
+    integer i;
+    localparam COL_WIDTH = wrDataWidth/wrMaskWidth;
+    always @ (posedge wr_clk) begin
+        if(wr_en) begin
+            for(i=0;i<wrMaskWidth;i=i+1) begin
+                if(wr_mask[i]) begin // byte-enable
+                    ram_block[wr_addr][i*COL_WIDTH +: COL_WIDTH] <= wr_data[i*COL_WIDTH +:COL_WIDTH];
+                end
             end
         end
-
-        reg [`symbol_width-1:0] ram_rd_data;
-        always @ (posedge rd_clk) begin
-            if(rd_en) begin
-                ram_rd_data <= ram_block[rd_addr];
-            end
-        end
-        assign rd_data[i*`symbol_width +:`symbol_width] = ram_rd_data;
     end
-    endgenerate
+    reg [rdDataWidth-1:0] ram_rd_data;
+    always @ (posedge rd_clk) begin
+        if(rd_en) begin
+            ram_rd_data <= ram_block[rd_addr];
+        end
+    end
+    assign rd_data = ram_rd_data;
 
 endmodule

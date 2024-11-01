@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 
 module Ram_1w_1rs #(
         parameter integer wordCount = 0,
